@@ -1,0 +1,88 @@
+// server.cpp : Defines the entry point for the console application.
+//
+
+#include "stdafx.h"
+#include "server.h"
+#include "afxsock.h"
+#ifdef _DEBUG
+#define new DEBUG_NEW
+#endif
+
+
+// The one and only application object
+
+CWinApp theApp;
+
+using namespace std;
+
+int _tmain(int argc, TCHAR* argv[], TCHAR* envp[])
+{
+	int nRetCode = 0;
+
+	HMODULE hModule = ::GetModuleHandle(NULL);
+
+	if (hModule != NULL)
+	{
+		// initialize MFC and print and error on failure
+		if (!AfxWinInit(hModule, NULL, ::GetCommandLine(), 0))
+		{
+			// TODO: change error code to suit your needs
+			_tprintf(_T("Fatal Error: MFC initialization failed\n"));
+			nRetCode = 1;
+		}
+		else
+		{
+			AfxSocketInit(NULL);
+			CSocket server;
+			CSocket client;
+			// khoi tao socket voi port 12345
+			server.Create(12345);
+
+			//lang nghe ket noi tu client
+			server.Listen();
+
+			cout << "Dang cho Client" << endl;
+			//chap nhan ket noi tu client
+			if (server.Accept(client)){
+				cout << "Client da ket noi" << endl;
+
+			}
+			char msg[100];
+			int len = 0;
+			//doan chat
+			while (true){
+				client.Receive(&len, sizeof(int), 0);
+				//client.Receive(msg, len, 0);
+				char* temp = new char[len + 1];
+
+				client.Receive(temp, len, 0);
+				temp[len] = 0; //ket thuc chuoi
+				cout << "Client: " << temp << endl;
+				delete temp;
+				//gui den client
+				cout << "Server: ";
+				gets_s(msg);
+				len = strlen(msg);
+
+				client.Send(&len, sizeof(int), 0);
+				client.Send(msg, len, 0);
+
+			}
+			client.Close();
+			server.Close();
+
+
+
+
+			// TODO: code your application's behavior here.
+		}
+	}
+	else
+	{
+		// TODO: change error code to suit your needs
+		_tprintf(_T("Fatal Error: GetModuleHandle failed\n"));
+		nRetCode = 1;
+	}
+
+	return nRetCode;
+}
